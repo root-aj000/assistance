@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     # Indexing Configuration
     chunk_size_tokens: int = Field(default=400, description="Target chunk size in tokens")
     chunk_overlap: int = Field(default=50, description="Overlap between chunks in tokens")
+    repository_path: Optional[str] = Field(default=None, description="Repository path to auto-index on startup")
     
     class Config:
         env_file = ".env"

@@ -14,11 +14,13 @@ Before starting, ensure you have:
 
 ```bash
 # Create .env file from template
+cd backend
 cp .env.example .env
 
-# Edit .env and add your keys:
+# Edit .env and add your configuration:
 # - GEMINI_API_KEY=your_key_here
 # - GRAPH_DB_PASSWORD=choose_a_password
+# - REPOSITORY_PATH=C:/path/to/your/repo (optional, for auto-indexing)
 ```
 
 ### Step 2: Start Neo4j Database
@@ -71,14 +73,28 @@ npm run dev
 
 ### Index Your Codebase
 
-**Method 1: Via curl**
+**Method 1: Auto-Index on Startup (Recommended)**
+
+The easiest way is to configure your repository path in the `.env` file:
+
+```bash
+# Edit backend/.env and add:
+REPOSITORY_PATH=C:/path/to/your/repo
+```
+
+Then restart the backend server - it will automatically index your codebase on startup!
+
+**Method 2: Manual Indexing via API**
+
+If you prefer manual control, you can trigger indexing via the API:
+
 ```bash
 curl -X POST http://localhost:5001/index/index \
   -H "Content-Type: application/json" \
   -d "{\"repository_path\": \"C:/path/to/your/repo\"}"
 ```
 
-**Method 2: Via Python**
+Or via Python:
 ```python
 import requests
 

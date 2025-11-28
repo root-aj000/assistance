@@ -5,6 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 import uvicorn
+import logging
+import asyncio
+
+logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
@@ -21,6 +25,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Run startup tasks including auto-indexing if configured."""
+    logger.info("Starting up Vibe Coding AI Agent...")
+    
+    # Auto-index repository if path is configured
+    if settings.repository_path:
+        logger.info(f"Auto-indexing repository: {settings.repository_path}")
+        try:
+            from services.indexer import indexer
+            # Run indexing in background task to not block startup
+            asyncio.create_task(indexer.index_repository(settings.repository_path))
+        except Exception as e:
+            logger.error(f"Error during auto-indexing: {e}")
+    else:
+        logger.info("No repository path configured for auto-indexing")
 
 
 @app.get("/")
