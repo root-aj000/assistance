@@ -17,9 +17,9 @@ numpy==1.26.3
 neo4j==5.16.0
 
 # Code Analysis
-tree-sitter==0.20.4
-tree-sitter-python==0.20.4
-tree-sitter-typescript==0.20.5
+tree-sitter
+tree-sitter-python
+tree-sitter-typescript
 
 # Utilities
 python-dotenv==1.0.0
