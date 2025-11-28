@@ -2,14 +2,20 @@
 Embedding generation using Gemini API.
 """
 import google.generativeai as genai
+from google.api_core import exceptions as google_exceptions
 from typing import List
 from config import settings
+from llm.rate_limiter import rate_limiter
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
 # Configure Gemini API
 genai.configure(api_key=settings.gemini_api_key)
+
+# Initialize rate limiter for embeddings
+rate_limiter.add_model("embeddings", settings.embedding_rate_limit_rpm)
 
 
 class EmbeddingGenerator:
@@ -34,17 +40,42 @@ class EmbeddingGenerator:
         Returns:
             Embedding vector
         """
-        try:
-            result = genai.embed_content(
-                model=self.model,
-                content=text,
-                task_type="retrieval_document"
-            )
-            return result['embedding']
-        except Exception as e:
-            logger.error(f"Error generating embedding: {e}")
-            # Return zero vector as fallback
-            return [0.0] * 768
+        max_retries = 3
+        base_delay = 2
+        
+        # Apply rate limiting
+        rate_limiter.wait_if_needed("embeddings")
+        
+        for attempt in range(max_retries):
+            try:
+                result = genai.embed_content(
+                    model=self.model,
+                    content=text,
+                    task_type="retrieval_document"
+                )
+                return result['embedding']
+            except google_exceptions.ResourceExhausted as e:
+                error_msg = str(e)
+                if "quota" in error_msg.lower():
+                    logger.error(f"❌ API Quota Exceeded: {error_msg}")
+                    logger.error("Please wait for quota to reset or upgrade your API plan")
+                    logger.error("Visit: https://ai.google.dev/gemini-api/docs/rate-limits")
+                    # Don't retry on quota errors, fail immediately
+                    return [0.0] * 768
+                else:
+                    # Retry other resource exhausted errors
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"Resource exhausted, retrying in {delay}s...")
+                        time.sleep(delay)
+                    else:
+                        logger.error(f"Error generating embedding after {max_retries} attempts: {e}")
+                        return [0.0] * 768
+            except Exception as e:
+                logger.error(f"Error generating embedding: {e}")
+                return [0.0] * 768
+        
+        return [0.0] * 768
     
     async def generate_embeddings_batch(self, texts: List[str]) -> List[List[float]]:
         """
@@ -72,17 +103,42 @@ class EmbeddingGenerator:
         Returns:
             Query embedding vector
         """
-        try:
-            result = genai.embed_content(
-                model=self.model,
-                content=query,
-                task_type="retrieval_query"
-            )
-            return result['embedding']
-        except Exception as e:
-            logger.error(f"Error generating query embedding: {e}")
-            return [0.0] * 768
+        # Apply rate limiting
+        rate_limiter.wait_if_needed("embeddings")
+        
+        max_retries = 3
+        base_delay = 2
+        
+        for attempt in range(max_retries):
+            try:
+                result = genai.embed_content(
+                    model=self.model,
+                    content=query,
+                    task_type="retrieval_query"
+                )
+                return result['embedding']
+            except google_exceptions.ResourceExhausted as e:
+                error_msg = str(e)
+                if "quota" in error_msg.lower():
+                    logger.error(f"❌ API Quota Exceeded for query embedding: {error_msg}")
+                    logger.error("Please wait for quota to reset or upgrade your API plan")
+                    logger.error("Visit: https://ai.google.dev/gemini-api/docs/rate-limits")
+                    return [0.0] * 768
+                else:
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"Resource exhausted, retrying in {delay}s...")
+                        time.sleep(delay)
+                    else:
+                        logger.error(f"Error generating query embedding after {max_retries} attempts: {e}")
+                        return [0.0] * 768
+            except Exception as e:
+                logger.error(f"Error generating query embedding: {e}")
+                return [0.0] * 768
+        
+        return [0.0] * 768
 
 
 # Global embedding generator instance
 embedding_generator = EmbeddingGenerator()
+

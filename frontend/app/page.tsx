@@ -26,34 +26,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                🧠 Vibe Coding AI Agent
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                AI-powered code understanding and debugging assistant
-              </p>
-            </div>
-            <div className="flex space-x-4">
-              <a
-                href="http://localhost:5001/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                API Docs
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <p className="text-lg text-gray-700">
+            AI-powered code understanding and debugging assistant
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Select a file from the tree, view its code, and chat with AI about it
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Sidebar - File Tree */}
           <div className="lg:col-span-1">
@@ -95,3 +78,4 @@ export default function Home() {
     </div>
   );
 }
+

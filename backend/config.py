@@ -13,6 +13,27 @@ class Settings(BaseSettings):
     # Gemini API Configuration
     gemini_api_key: str = Field(..., description="Gemini API key for LLM and embeddings")
     
+    # Embedding Configuration
+    use_local_embeddings: bool = Field(default=True, description="Use local embeddings instead of Gemini API (free, no quota)")
+    local_embedding_model: str = Field(default="all-MiniLM-L6-v2", description="Local embedding model name")
+    
+    # Gemini Model Selection
+    # Available models: gemini-2.5-flash, gemini-2.5-pro, gemini-2.5-flash-lite
+    gemini_flash_model: str = Field(default="gemini-2.5-flash", description="Fast, lightweight model")
+    gemini_pro_model: str = Field(default="gemini-2.5-pro", description="Most capable model")
+    gemini_lite_model: str = Field(default="gemini-2.5-flash-lite", description="Ultra-fast lite model")
+    gemini_embedding_model: str = Field(default="models/text-embedding-004", description="Embedding model")
+    
+    # Default model to use for chat
+    default_chat_model: str = Field(default="gemini-2.5-flash", description="Default model for chat")
+    
+    # Model-specific Rate Limiting (requests per minute)
+    # Set to 3 RPM to avoid quota issues
+    flash_rate_limit_rpm: int = Field(default=3, description="Rate limit for Flash model (RPM)")
+    pro_rate_limit_rpm: int = Field(default=3, description="Rate limit for Pro model (RPM)")
+    lite_rate_limit_rpm: int = Field(default=3, description="Rate limit for Lite model (RPM)")
+    embedding_rate_limit_rpm: int = Field(default=3, description="Rate limit for embeddings (RPM)")
+    
     # Vector Database (FAISS)
     vector_db_path: str = Field(default="./data/vector_db", description="Path to FAISS vector database")
     
@@ -25,8 +46,8 @@ class Settings(BaseSettings):
     max_tokens_per_request: int = Field(default=70000, description="Maximum tokens per LLM request")
     system_prompt_reserve: int = Field(default=3000, description="Reserved tokens for system prompt")
     
-    # Rate Limiting
-    rate_limit_rpm: int = Field(default=60, description="Rate limit: requests per minute")
+    # Legacy Rate Limiting (kept for backwards compatibility)
+    rate_limit_rpm: int = Field(default=3, description="Global rate limit: requests per minute")
     rate_limit_tpm: int = Field(default=100000, description="Rate limit: tokens per minute")
     
     # Server Configuration
