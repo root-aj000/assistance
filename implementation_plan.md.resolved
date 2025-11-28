@@ -1,0 +1,281 @@
+# Vibe Coding AI Agent - Implementation Plan
+
+A desktop AI assistant that deeply understands large Python/TypeScript codebases through ASG/CFG analysis and vector embeddings, enabling intelligent debugging, planning, and code interaction.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Project Scope & Complexity**
+> This is a large-scale project involving:
+> - Full-stack development (FastAPI backend + Next.js frontend)
+> - Advanced code analysis (ASG/CFG using Tree-sitter)
+> - Local database setup (Vector DB + Graph DB)
+> - LLM integration with Gemini 2.5 Flash
+> - Token management and context packing
+> 
+> **Estimated Time**: This will require multiple development sessions to complete all components.
+
+> [!WARNING]
+> **Local Database Requirements**
+> You will need to:
+> - Choose between FAISS or Chroma for vector storage
+> - Choose between Neo4j or Memgraph for graph storage
+> - Have these databases running locally before the system can function
+> 
+> **Please confirm your preferences:**
+> 1. Vector DB: FAISS (simpler, file-based) or Chroma (feature-rich)?
+> 2. Graph DB: Neo4j (mature, comprehensive) or Memgraph (faster, modern)?
+
+> [!IMPORTANT]
+> **Gemini API Key Required**
+> You'll need a valid Gemini API key with access to:
+> - Gemini 2.5 Flash (for text generation)
+> - Gemini Embedding API (for code embeddings)
+
+## Proposed Changes
+
+### Backend Infrastructure
+
+#### [NEW] [backend/](file:///u:/Assistance/backend/)
+Complete FastAPI application serving as the AI brain for code understanding.
+
+##### Core Application Files
+- **[NEW]** [main.py](file:///u:/Assistance/backend/main.py) - FastAPI application entry point with CORS, middleware, and routers
+- **[NEW]** [config.py](file:///u:/Assistance/backend/config.py) - Environment configuration using pydantic-settings
+- **[NEW]** [requirements.txt](file:///u:/Assistance/backend/requirements.txt) - Python dependencies
+
+##### Database Layer (`db/`)
+- **[NEW]** [db/vector_store.py](file:///u:/Assistance/backend/db/vector_store.py) - Vector database interface (FAISS/Chroma)
+- **[NEW]** [db/graph_store.py](file:///u:/Assistance/backend/db/graph_store.py) - Graph database interface (Neo4j/Memgraph)
+- **[NEW]** [db/models.py](file:///u:/Assistance/backend/db/models.py) - Data models for storage
+
+##### Code Analysis (`analysis/`)
+- **[NEW]** [analysis/tree_sitter_parser.py](file:///u:/Assistance/backend/analysis/tree_sitter_parser.py) - Tree-sitter integration for Python/TS
+- **[NEW]** [analysis/asg_builder.py](file:///u:/Assistance/backend/analysis/asg_builder.py) - Abstract Semantic Graph construction
+- **[NEW]** [analysis/cfg_builder.py](file:///u:/Assistance/backend/analysis/cfg_builder.py) - Control Flow Graph construction
+- **[NEW]** [analysis/chunker.py](file:///u:/Assistance/backend/analysis/chunker.py) - Code chunking (300-500 tokens)
+
+##### Retrieval System (`retrieval/`)
+- **[NEW]** [retrieval/vector_search.py](file:///u:/Assistance/backend/retrieval/vector_search.py) - Vector similarity search
+- **[NEW]** [retrieval/graph_search.py](file:///u:/Assistance/backend/retrieval/graph_search.py) - ASG/CFG traversal
+- **[NEW]** [retrieval/ranker.py](file:///u:/Assistance/backend/retrieval/ranker.py) - Hybrid ranking (semantic + graph)
+- **[NEW]** [retrieval/context_packer.py](file:///u:/Assistance/backend/retrieval/context_packer.py) - Token-aware context building (70k limit)
+
+##### LLM Integration (`llm/`)
+- **[NEW]** [llm/gemini_client.py](file:///u:/Assistance/backend/llm/gemini_client.py) - Gemini API wrapper with streaming
+- **[NEW]** [llm/embeddings.py](file:///u:/Assistance/backend/llm/embeddings.py) - Embedding generation
+- **[NEW]** [llm/prompts.py](file:///u:/Assistance/backend/llm/prompts.py) - System prompts for different tasks
+- **[NEW]** [llm/token_counter.py](file:///u:/Assistance/backend/llm/token_counter.py) - Token counting and enforcement
+
+##### API Routes (`api/`)
+- **[NEW]** [api/chat.py](file:///u:/Assistance/backend/api/chat.py) - Chat endpoints (`/ai/chat`, `/ai/codebase/chat`)
+- **[NEW]** [api/debug.py](file:///u:/Assistance/backend/api/debug.py) - Debug endpoint (`/ai/debug`)
+- **[NEW]** [api/plan.py](file:///u:/Assistance/backend/api/plan.py) - Planning endpoint (`/ai/plan`)
+- **[NEW]** [api/files.py](file:///u:/Assistance/backend/api/files.py) - File operations (`/files`, `/file`)
+- **[NEW]** [api/index.py](file:///u:/Assistance/backend/api/index.py) - Index stats (`/index/stats`)
+
+##### Services (`services/`)
+- **[NEW]** [services/indexer.py](file:///u:/Assistance/backend/services/indexer.py) - Main indexing pipeline
+- **[NEW]** [services/file_scanner.py](file:///u:/Assistance/backend/services/file_scanner.py) - Repository file discovery
+- **[NEW]** [services/metrics.py](file:///u:/Assistance/backend/services/metrics.py) - Index coverage tracking
+
+---
+
+### Frontend Application
+
+#### [NEW] [frontend/](file:///u:/Assistance/frontend/)
+Modern Next.js 14 application with TypeScript for the UI.
+
+##### Core Files
+- **[NEW]** [package.json](file:///u:/Assistance/frontend/package.json) - Dependencies and scripts
+- **[NEW]** [tsconfig.json](file:///u:/Assistance/frontend/tsconfig.json) - TypeScript configuration
+- **[NEW]** [next.config.js](file:///u:/Assistance/frontend/next.config.js) - Next.js configuration
+
+##### App Router (`app/`)
+- **[NEW]** [app/layout.tsx](file:///u:/Assistance/frontend/app/layout.tsx) - Root layout
+- **[NEW]** [app/page.tsx](file:///u:/Assistance/frontend/app/page.tsx) - Main page with file tree + chat
+- **[NEW]** [app/globals.css](file:///u:/Assistance/frontend/app/globals.css) - Global styles
+
+##### Components (`components/`)
+- **[NEW]** [components/FileTree.tsx](file:///u:/Assistance/frontend/components/FileTree.tsx) - Repository file tree viewer
+- **[NEW]** [components/CodeViewer.tsx](file:///u:/Assistance/frontend/components/CodeViewer.tsx) - Syntax-highlighted code display
+- **[NEW]** [components/ChatBox.tsx](file:///u:/Assistance/frontend/components/ChatBox.tsx) - Multi-line chat interface
+- **[NEW]** [components/MessageBubble.tsx](file:///u:/Assistance/frontend/components/MessageBubble.tsx) - Chat message rendering
+
+##### API Client (`lib/`)
+- **[NEW]** [lib/api.ts](file:///u:/Assistance/frontend/lib/api.ts) - Backend API client
+- **[NEW]** [lib/types.ts](file:///u:/Assistance/frontend/lib/types.ts) - TypeScript type definitions
+
+---
+
+### Configuration & Documentation
+
+#### [NEW] [.env.example](file:///u:/Assistance/.env.example)
+Template for environment variables:
+```
+GEMINI_API_KEY=your_api_key_here
+VECTOR_DB_PATH=./data/vector_db
+GRAPH_DB_URL=bolt://localhost:7687
+GRAPH_DB_USER=neo4j
+GRAPH_DB_PASSWORD=password
+MAX_TOKENS_PER_REQUEST=70000
+RATE_LIMIT_RPM=60
+RATE_LIMIT_TPM=100000
+```
+
+#### [NEW] [README.md](file:///u:/Assistance/README.md)
+Comprehensive setup and usage guide including:
+- Project overview and features
+- Prerequisites (Python 3.11+, Node.js 18+, databases)
+- Installation steps
+- Database setup instructions
+- Configuration guide
+- Running the application
+- API documentation
+- Architecture overview
+
+#### [NEW] [.gitignore](file:///u:/Assistance/.gitignore)
+Ignore patterns for `.env`, `node_modules/`, `__pycache__/`, database files, etc.
+
+---
+
+## Architecture Overview
+
+```mermaid
+graph TB
+    subgraph Frontend
+        UI[Next.js UI]
+        FT[FileTree]
+        CV[CodeViewer]
+        CB[ChatBox]
+    end
+    
+    subgraph Backend
+        API[FastAPI Server]
+        
+        subgraph Analysis
+            TS[Tree-sitter Parser]
+            ASG[ASG Builder]
+            CFG[CFG Builder]
+            CH[Chunker]
+        end
+        
+        subgraph Storage
+            VDB[(Vector DB<br/>FAISS/Chroma)]
+            GDB[(Graph DB<br/>Neo4j/Memgraph)]
+        end
+        
+        subgraph Retrieval
+            VS[Vector Search]
+            GS[Graph Search]
+            RK[Ranker]
+            CP[Context Packer]
+        end
+        
+        subgraph LLM
+            GEM[Gemini Client]
+            EMB[Embeddings]
+        end
+    end
+    
+    UI --> API
+    API --> TS
+    TS --> ASG
+    TS --> CFG
+    TS --> CH
+    ASG --> GDB
+    CFG --> GDB
+    CH --> EMB
+    EMB --> VDB
+    API --> VS
+    API --> GS
+    VS --> VDB
+    GS --> GDB
+    VS --> RK
+    GS --> RK
+    RK --> CP
+    CP --> GEM
+```
+
+## Verification Plan
+
+### Automated Tests
+
+1. **Backend Unit Tests**
+   ```bash
+   cd backend
+   pytest tests/
+   ```
+   - Test ASG/CFG parsing
+   - Test chunking logic
+   - Test ranking algorithm
+   - Test token counting
+
+2. **Integration Tests**
+   - Index a small sample repository (e.g., 10-20 files)
+   - Verify embeddings are stored
+   - Verify graph nodes are created
+   - Test retrieval pipeline
+
+3. **API Tests**
+   ```bash
+   pytest tests/api/
+   ```
+   - Test all endpoints
+   - Verify streaming responses
+   - Test error handling
+
+### Manual Verification
+
+1. **Database Setup**
+   - Confirm vector DB is accessible
+   - Confirm graph DB is accessible
+   - Verify database health checks pass
+
+2. **End-to-End Flow**
+   - Start backend server
+   - Start frontend dev server
+   - Index a sample Python/TypeScript repository
+   - Use chat to ask questions about the codebase
+   - Test debug functionality
+   - Test planning functionality
+   - Verify token limits are enforced
+   - Check `/index/stats` for coverage metrics
+
+3. **Performance**
+   - Index a medium-sized repo (100+ files)
+   - Measure indexing time
+   - Measure query response time
+   - Verify context packing stays under 70k tokens
+
+## Implementation Sequence
+
+1. **Phase 1: Foundation** (Steps 1-2)
+   - Set up project structure
+   - Initialize backend and frontend
+   - Configure environment
+
+2. **Phase 2: Core Analysis** (Steps 3-4)
+   - Implement Tree-sitter parsing
+   - Build ASG/CFG generators
+   - Create chunking and context packing
+
+3. **Phase 3: Storage & Retrieval** (Steps 5-6)
+   - Set up databases
+   - Implement indexing pipeline
+   - Build retrieval system
+
+4. **Phase 4: LLM & API** (Steps 6-8)
+   - Integrate Gemini
+   - Implement API endpoints
+   - Add security measures
+
+5. **Phase 5: Frontend** (Step 7, 9)
+   - Build UI components
+   - Connect to backend
+   - Implement chat interface
+
+6. **Phase 6: Testing & Polish** (Steps 9-10)
+   - Run tests
+   - Optimize performance
+   - Complete documentation
